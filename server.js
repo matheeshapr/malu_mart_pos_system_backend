@@ -14,6 +14,9 @@ app.use('/api/auth', authRoutes);
 const categoryRoutes = require('./routes/categoryRoutes');
 app.use('/api/categories', categoryRoutes);
 
+const customerRoutes = require('./routes/customerRoutes');
+app.use('/api/customers', customerRoutes);
+
 // Add these two lines for Products
 const productRoutes = require('./routes/productRoutes');
 app.use('/api/products', productRoutes);
