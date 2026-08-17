@@ -24,7 +24,20 @@ const getCategories = async (req, res) => {
     }
 };
 
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await pool.query("DELETE FROM categories WHERE id = $1", [id]);
+    res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Cannot delete. Products might be linked to this category." });
+  }
+};
+
 module.exports = {
     createCategory,
-    getCategories
+    getCategories,
+    deleteCategory
 };
