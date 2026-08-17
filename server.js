@@ -17,6 +17,12 @@ app.use('/api/categories', categoryRoutes);
 const customerRoutes = require('./routes/customerRoutes');
 app.use('/api/customers', customerRoutes);
 
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users', userRoutes);
+
+const orderRoutes = require('./routes/orderRoutes');
+app.use('/api/orders', orderRoutes);
+
 // Add these two lines for Products
 const productRoutes = require('./routes/productRoutes');
 app.use('/api/products', productRoutes);
