@@ -1,11 +1,9 @@
 const pool = require('../db');
 
-// පාරිභෝගික ලියාපදිංචිය (Register)
 const registerCustomer = async (req, res) => {
   try {
-    const { name, phone, nic, password } = req.body;
+    const { name, phone, nic, address, password } = req.body; // address එක මෙහි ලබා ගැනීම
 
-    // දුරකථන අංකය හෝ NIC එක දැනටමත් පවතීදැයි පරීක්ෂා කිරීම
     const existing = await pool.query(
       "SELECT * FROM customers WHERE phone = $1 OR nic = $2",
       [phone, nic]
@@ -15,9 +13,10 @@ const registerCustomer = async (req, res) => {
       return res.status(400).json({ error: "Phone number or NIC already registered!" });
     }
 
+    // Database එකට address එක ඇතුළත් කිරීම සහ returning වලට address එක එකතු කිරීම
     const newCustomer = await pool.query(
-      "INSERT INTO customers (name, phone, nic, password) VALUES ($1, $2, $3, $4) RETURNING id, name, phone, nic",
-      [name, phone, nic, password]
+      "INSERT INTO customers (name, phone, nic, address, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, phone, nic, address",
+      [name, phone, nic, address, password]
     );
 
     res.status(201).json({ message: "Registration successful!", customer: newCustomer.rows[0] });
@@ -43,7 +42,6 @@ const loginCustomer = async (req, res) => {
 
     const customer = result.rows[0];
 
-    // මුරපදය සමාන දැයි බැලීම
     if (customer.password !== password) {
       return res.status(401).json({ error: "Invalid password!" });
     }
@@ -54,7 +52,8 @@ const loginCustomer = async (req, res) => {
         id: customer.id,
         name: customer.name,
         phone: customer.phone,
-        nic: customer.nic
+        nic: customer.nic,
+        address: customer.address
       }
     });
   } catch (error) {
@@ -74,8 +73,54 @@ const getCustomers = async (req, res) => {
   }
 };
 
+const getCustomerOrders = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      "SELECT * FROM sales WHERE customer_id = $1 ORDER BY id DESC",
+      [id]
+    );
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// Staff Login
+const loginUser = async (req, res) => {
+  try {
+    const { name, pin_code } = req.body;
+
+    const result = await pool.query(
+      "SELECT * FROM users WHERE name = $1 AND pin_code = $2",
+      [name, pin_code]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid credentials or PIN code" });
+    }
+
+    const user = result.rows[0];
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server Error during login" });
+  }
+};
+
+// සියල්ලම එකම තැනක හරියට Export කිරීම
 module.exports = {
   registerCustomer,
   loginCustomer,
-  getCustomers
+  getCustomers,
+  loginUser,
+  getCustomerOrders
 };
