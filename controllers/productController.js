@@ -12,15 +12,16 @@ const createProduct = async (req, res) => {
             cost_price,
             selling_price,
             stock_quantity,
-            low_stock_alert
+            low_stock_alert,
+            image_url
         } = req.body;
 
         const newProduct = await pool.query(
             `INSERT INTO products 
-            (category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            (category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert, image_url) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *`,
-            [category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert]
+            [category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert, image_url]
         );
 
         res.status(201).json(newProduct.rows[0]);
@@ -49,15 +50,15 @@ const getProducts = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert } = req.body;
+        const { category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert, image_url } = req.body;
 
         const updateQuery = `
       UPDATE products 
-      SET category_id=$1, name=$2, is_weighed=$3, plu_code=$4, barcode=$5, cost_price=$6, selling_price=$7, stock_quantity=$8, low_stock_alert=$9 
-      WHERE id=$10 RETURNING *
+      SET category_id=$1, name=$2, is_weighed=$3, plu_code=$4, barcode=$5, cost_price=$6, selling_price=$7, stock_quantity=$8, low_stock_alert=$9, image_url=$10 
+      WHERE id=$11 RETURNING *
     `;
 
-        const result = await pool.query(updateQuery, [category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert, id]);
+        const result = await pool.query(updateQuery, [category_id, name, is_weighed, plu_code, barcode, cost_price, selling_price, stock_quantity, low_stock_alert, image_url, id]);
 
         if (result.rows.length === 0) return res.status(404).json({ error: "Product not found" });
         res.status(200).json(result.rows[0]);
